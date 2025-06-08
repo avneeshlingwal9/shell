@@ -36,13 +36,13 @@ int main(int argc, char *argv[]) {
 
     else if(strcmp(command , "echo") == 0){
 
-      printf("%s\n" , input + strlen(command));
+      printf("%s\n" , input + strlen(command) + 1);
 
     }
     else{
 
     printf("%s: command not found\n" , input);}
-    
+
   }
   return 0;
 }
