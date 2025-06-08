@@ -24,11 +24,25 @@ int main(int argc, char *argv[]) {
       *pos = '\0';
     }
 
-    if(strcmp(input , "exit 0") == 0){
+    char inputProcess[100] ; // Copy made, as strtok, can affect the original string. 
+
+    strcpy(inputProcess , input);
+
+    char* command; 
+    command = strtok(inputProcess , " ");
+    if(strcmp(command , "exit") == 0){
       break;
     }
 
-    printf("%s: command not found\n" , input);
+    else if(strcmp(command , "echo") == 0){
+
+      printf("%s\n" , input + strlen(command));
+
+    }
+    else{
+
+    printf("%s: command not found\n" , input);}
+    
   }
   return 0;
 }
