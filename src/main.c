@@ -1,25 +1,30 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 
 int main(int argc, char *argv[]) {
   // Flush after every printf
   setbuf(stdout, NULL);
 
   // Uncomment this block to pass the first stage
-  printf("$ ");
+
 
   // Wait for user input
-  char input[100];
-  fgets(input, 100, stdin);
+  while(true){
+    printf("$ ");
+    char input[100];
+    fgets(input, 100, stdin);
 
-  char *pos = strchr(input, '\n');
-  if(pos != NULL){
-    *pos = '\0';
+
+    char *pos = strchr(input, '\n');
+    if(pos != NULL){
+      *pos = '\0';
+    }
+
+
+
+    printf("%s: command not found\n" , input);
   }
-  
-
-
-  printf("%s: command not found\n" , input);
   return 0;
 }
