@@ -14,7 +14,9 @@ int main(int argc, char *argv[]) {
   while(true){
     printf("$ ");
     char input[100];
-    fgets(input, 100, stdin);
+    if(fgets(input, 100, stdin) == NULL){
+      break;
+    }
 
 
     char *pos = strchr(input, '\n');
@@ -22,7 +24,9 @@ int main(int argc, char *argv[]) {
       *pos = '\0';
     }
 
-
+    if(strcmp(input , "exit 0") == 0){
+      break;
+    }
 
     printf("%s: command not found\n" , input);
   }
