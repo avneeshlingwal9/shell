@@ -8,6 +8,94 @@
 
 #define MAX_COMMAND_SIZE 512
 
+char *searchCommand(char* command){
+
+    char *path = strdup(getenv("PATH"));
+
+    char* currpath = strtok(path , ":");
+    char *tosearch  = (char*)malloc(MAX_COMMAND_SIZE); 
+
+    do{
+
+
+      sprintf(tosearch , "%s/%s" , currpath ,command);
+
+
+      if(access(tosearch , X_OK) == 0){
+
+        free(path);
+        return tosearch ; 
+
+   
+
+      }
+
+
+
+
+    }while(currpath = strtok(NULL, ":"));
+
+    free(path); 
+    free(tosearch);
+    return NULL;
+
+}
+
+int countArgs(char* input){
+
+  int count = 1; 
+  char * temp; 
+  while(temp = strtok(NULL , " ")){
+
+    count++;
+
+  }
+  return count; 
+
+}
+
+void execute(char* command , char* input){
+
+  
+
+  char tempinput[MAX_COMMAND_SIZE]; 
+  strcpy(tempinput , input);
+  int num = countArgs(tempinput);
+
+  char* args[num]; 
+
+  char* path = searchCommand(command);
+
+
+
+
+
+  args[0] = strtok(input, " "); 
+ 
+
+  for(int i = 1 ; i < num ; i++){
+
+    char* toinsert ; 
+    if(toinsert = strtok(NULL, " ")){
+
+      args[i] = toinsert; 
+
+    }
+
+  }
+  printf("Path is %s\n" , path);
+
+  execvp(command , args);
+
+
+
+
+
+  
+
+
+
+}
 void executeEcho(char* input, int len){
 
 
@@ -15,9 +103,9 @@ void executeEcho(char* input, int len){
 
 
 }
-void executeType(void){
+void executeType(char* command){
 
-  char* command = strtok(NULL , " ");
+
 
   if(strcmp(command,"type") == 0 || strcmp(command , "exit") == 0 || strcmp(command,"echo") == 0){
     printf("%s is a shell builtin\n", command);
@@ -51,6 +139,8 @@ void executeType(void){
 
   }while(currPath = strtok(NULL, ":"));
 
+  free(path);
+
   printf("%s: not found\n", command);
 
 }
@@ -59,9 +149,7 @@ void executeType(void){
 
 
 
-void handleCommand(char* inputProcess){
-
-  char* command = strtok(inputProcess , " ");
+void handleCommand(char* command , char* inputProcess){
 
   if(strcmp(command , "exit") == 0){
     exit(0);  
@@ -71,12 +159,12 @@ void handleCommand(char* inputProcess){
     executeEcho(inputProcess , strlen(command));
   }
   else if(strcmp(command, "type") == 0){
-    executeType();
+    executeType(command);
   }
 
   else {
 
-    printf("%s: command not found\n" , command);
+    execute(command, inputProcess);
 
 
   }
@@ -104,8 +192,9 @@ void shellStart(void){
     char inputProcess[MAX_COMMAND_SIZE] ; // Copy made, as strtok, can affect the original string. 
 
     strcpy(inputProcess , input);
+    char * command = strtok(input , " ");
 
-    handleCommand(inputProcess);
+    handleCommand(command , inputProcess);
 
   }
 }
