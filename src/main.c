@@ -62,7 +62,7 @@ void execute(char* command , char* input){
   strcpy(tempinput , input);
   int num = countArgs(tempinput);
 
-  char* args[num]; 
+  char* args[num + 1]; 
 
   char* path = searchCommand(command);
 
@@ -83,8 +83,9 @@ void execute(char* command , char* input){
     }
 
   }
+  args[num] = NULL;
 
-
+  
   execvp(command , args);
 
 
@@ -204,10 +205,10 @@ int main(int argc, char *argv[]) {
   setbuf(stdout, NULL);
 
   // Uncomment this block to pass the first stage
+
   shellStart();
 
-
-
+  
 
 
 
