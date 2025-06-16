@@ -35,7 +35,7 @@ int main(int argc, char *argv[]) {
 
       command = strtok(NULL , " ");
 
-      char *env = getenv("PATH"); 
+      char *env = strdup(getenv("PATH")); 
 
       char *dirs = strtok(env, ":");
 
