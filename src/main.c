@@ -83,7 +83,7 @@ void execute(char* command , char* input){
     }
 
   }
-  printf("Path is %s\n" , path);
+
 
   execvp(command , args);
 
