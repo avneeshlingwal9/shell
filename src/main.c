@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
+#include <unistd.h>
 
 int main(int argc, char *argv[]) {
   // Flush after every printf
@@ -34,14 +35,44 @@ int main(int argc, char *argv[]) {
 
       command = strtok(NULL , " ");
 
-      if(strcmp(command , "exit") == 0 || strcmp(command , "type") == 0 || strcmp(command , "echo") == 0){
-        printf("%s is a shell builtin\n" , command);
-      }
-      else{
+      char *env = getenv("PATH"); 
 
+      char *dirs = strtok(env, ":");
+
+      bool found = false; 
+
+    
+
+      do{
+
+        char *tosearch = (char*)malloc(strlen(command) + strlen(dirs) + 3);
+        
+        strcpy(tosearch , dirs);
+        strcat(tosearch , "/");
+        strcat(tosearch, command);
+
+
+        if(access(tosearch , X_OK) == 0){
+          printf("%s is %s\n" , command , tosearch);
+          found = true; 
+          break;
+        }
+
+
+
+
+
+      }while(dirs = strtok(NULL , ":"));
+
+      if(!found){
+          
         printf("%s: not found\n" , command);
-
+        
       }
+      
+ 
+
+    
 
     }
 
