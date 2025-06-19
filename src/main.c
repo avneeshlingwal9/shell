@@ -9,9 +9,26 @@
 // Starts the shell.
 
 #define MAX_COMMAND_SIZE 512
-
+#define MIN_PATH_SIZE 1024
 
 int errno ; 
+
+void executepwd(void){
+
+  char* dir = getcwd(NULL , 1024);
+
+  if(dir == NULL){
+
+    printf("NOt able to print directory."); 
+
+  }
+  else{
+    printf("%s\n",dir);
+  }
+
+  free(dir);
+
+}
 
 bool checkValid(char *command){
 
@@ -179,9 +196,9 @@ void handleCommand(char* command , char* inputProcess ){
 
   if(!checkValid(command)){
   
-          printf("%s: command not found\n", command);
+      printf("%s: command not found\n", command);
 
-          return;
+      return;
 
   }
 
@@ -199,6 +216,12 @@ void handleCommand(char* command , char* inputProcess ){
     char* toFindType = strtok(NULL , " ");
 
     executeType(toFindType );
+
+  }
+
+  else if(strcmp(command,"pwd") == 0){
+
+      executepwd();
 
   }
 
