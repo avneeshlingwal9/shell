@@ -9,38 +9,9 @@
 
 #define MAX_COMMAND_SIZE 512
 
-char *searchCommand(char* command){
-
-    char *path = strdup(getenv("PATH"));
-
-    char* currpath = strtok(path , ":");
-    char *tosearch  = (char*)malloc(MAX_COMMAND_SIZE); 
-
-    do{
-
-
-      sprintf(tosearch , "%s/%s" , currpath ,command);
-
-
-      if(access(tosearch , X_OK) == 0){
-
-        free(path);
-        return tosearch ; 
-
-   
-
-      }
 
 
 
-
-    }while(currpath = strtok(NULL, ":"));
-
-    free(path); 
-    free(tosearch);
-    return NULL;
-
-}
 
 int countArgs(char* input){
 
@@ -59,22 +30,21 @@ void execute(char* command , char* input ){
 
   
 
-  char tempinput[MAX_COMMAND_SIZE]; 
+  char tempinput[MAX_COMMAND_SIZE];
+
+  // Copying, so during counting, input is not tampered.  
+
+
   strcpy(tempinput , input);
-  int num = countArgs(tempinput);
 
-  char* args[num + 1]; 
+  int numArgs = countArgs(tempinput);
 
-  char* path = searchCommand(command);
-
-
-
-
+  char* args[numArgs + 1]; 
 
   args[0] = strtok(input, " "); 
  
 
-  for(int i = 1 ; i < num ; i++){
+  for(int i = 1 ; i < numArgs ; i++){
 
     char* toinsert ; 
     if(toinsert = strtok(NULL, " ")){
@@ -84,14 +54,20 @@ void execute(char* command , char* input ){
     }
 
   }
-  args[num] = NULL; 
+  args[numArgs] = NULL; 
   int pid = fork();
 
-  if(pid == 0)
-{  execvp(command , args);}
-else{
+  if(pid == 0){  
+
+    execvp(command , args);
+              
+  } 
+
+  else{
+
   wait(0);
-}
+  
+  }
 
 
 
@@ -111,6 +87,7 @@ void executeEcho(char* input, int len){
 
 }
 void executeType(char* command ){
+
 
 
 
@@ -166,7 +143,13 @@ void handleCommand(char* command , char* inputProcess ){
     executeEcho(inputProcess , strlen(command));
   }
   else if(strcmp(command, "type") == 0){
-    executeType(inputProcess );
+
+    // Because strtok, was called on input, it still have that string tokenize. 
+
+    char* toFindType = strtok(NULL , " ");
+
+    executeType(toFindType );
+
   }
 
   else {
