@@ -15,6 +15,17 @@
 
 void executecd(char* path){
 
+  if(strcmp(path, "~") == 0){
+
+    char* home = getenv("HOME");
+
+    chdir(home);
+
+    free(home);
+    return;
+
+  }
+
   int check = chdir(path);
 
   if(check == -1){
