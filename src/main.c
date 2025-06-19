@@ -13,7 +13,45 @@
 
 int errno ; 
 
+bool checkValid(char *command){
 
+  if(strcmp(command, "type") == 0 || strcmp(command, "exit") == 0 || strcmp(command, "echo") == 0){
+    return true;
+  }
+
+   char* path = strdup(getenv("PATH"));
+
+
+
+
+  char* currPath = strtok(path , ":");
+  do{
+      
+    char tosearch[MAX_COMMAND_SIZE];
+
+    sprintf(tosearch ,"%s/%s" , currPath, command);
+
+    if(access(tosearch , X_OK) == 0){
+
+
+      free(path);
+
+      return true; 
+
+    }
+
+
+
+
+  }while(currPath = strtok(NULL, ":"));
+
+  free(path);
+
+  return false; 
+
+
+
+}
 int countArgs(char* input){
 
   int count = 1; 
@@ -62,7 +100,7 @@ void execute(char* command , char* input ){
   if(pid == 0){  
 
     execvp(command , args);
-    printf("%s: command not found\n", command);
+
               
   } 
 
@@ -138,6 +176,14 @@ void executeType(char* command ){
 
 
 void handleCommand(char* command , char* inputProcess ){
+
+  if(!checkValid(command)){
+  
+          printf("%s: command not found\n", command);
+
+          return;
+
+  }
 
   if(strcmp(command , "exit") == 0){
     exit(0);  
