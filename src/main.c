@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include <unistd.h>
+#include <sys/wait.h>
 
 // Starts the shell.
 
@@ -54,7 +55,7 @@ int countArgs(char* input){
 
 }
 
-void execute(char* command , char* input){
+void execute(char* command , char* input ){
 
   
 
@@ -83,10 +84,15 @@ void execute(char* command , char* input){
     }
 
   }
-  args[num] = NULL;
+  args[num] = NULL; 
+  int pid = fork();
 
-  
-  execvp(command , args);
+  if(pid == 0)
+{  execvp(command , args);}
+else{
+  wait(0);
+}
+
 
 
 
@@ -104,7 +110,7 @@ void executeEcho(char* input, int len){
 
 
 }
-void executeType(char* command){
+void executeType(char* command ){
 
 
 
@@ -150,7 +156,7 @@ void executeType(char* command){
 
 
 
-void handleCommand(char* command , char* inputProcess){
+void handleCommand(char* command , char* inputProcess ){
 
   if(strcmp(command , "exit") == 0){
     exit(0);  
@@ -160,12 +166,13 @@ void handleCommand(char* command , char* inputProcess){
     executeEcho(inputProcess , strlen(command));
   }
   else if(strcmp(command, "type") == 0){
-    executeType(command);
+    executeType(inputProcess );
   }
 
   else {
-
-    execute(command, inputProcess);
+    
+    execute(command, inputProcess );
+  
 
 
   }
@@ -204,9 +211,9 @@ int main(int argc, char *argv[]) {
   // Flush after every printf
   setbuf(stdout, NULL);
 
-  // Uncomment this block to pass the first stage
-
   shellStart();
+
+
 
   
 
