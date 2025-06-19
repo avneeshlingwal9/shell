@@ -32,8 +32,15 @@ void executepwd(void){
 
 bool checkValid(char *command){
 
-  if(strcmp(command, "type") == 0 || strcmp(command, "exit") == 0 || strcmp(command, "echo") == 0){
-    return true;
+  if(strcmp(command, "type") == 0 || 
+
+    strcmp(command, "exit") == 0 ||
+
+    strcmp(command, "echo") == 0 || 
+
+    strcmp(command, "pwd") == 0 )
+  {
+      return true;
   }
 
    char* path = strdup(getenv("PATH"));
@@ -150,9 +157,11 @@ void executeType(char* command ){
 
 
 
-  if(strcmp(command,"type") == 0 || strcmp(command , "exit") == 0 || strcmp(command,"echo") == 0){
-    printf("%s is a shell builtin\n", command);
-    return;
+  if(strcmp(command,"type") == 0 || strcmp(command , "exit") == 0 || strcmp(command,"echo") == 0
+    || strcmp(command,"pwd") == 0 ){
+
+      printf("%s is a shell builtin\n", command);
+      return;
   }
 
   char* path = strdup(getenv("PATH"));
