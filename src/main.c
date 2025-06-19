@@ -4,13 +4,14 @@
 #include <stdbool.h>
 #include <unistd.h>
 #include <sys/wait.h>
+#include <errno.h>
 
 // Starts the shell.
 
 #define MAX_COMMAND_SIZE 512
 
 
-
+int errno ; 
 
 
 int countArgs(char* input){
@@ -54,12 +55,14 @@ void execute(char* command , char* input ){
     }
 
   }
+  int err = 0 ; 
   args[numArgs] = NULL; 
   int pid = fork();
 
   if(pid == 0){  
 
     execvp(command , args);
+    err = errno;
               
   } 
 
@@ -67,6 +70,10 @@ void execute(char* command , char* input ){
 
   wait(0);
   
+  }
+  if(err != 0){
+
+    printf("%s: command not found\n", command);
   }
 
 
