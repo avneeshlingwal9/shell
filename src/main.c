@@ -21,7 +21,7 @@ void executecd(char* path){
 
     chdir(home);
 
-    free(home);
+
     return;
 
   }
