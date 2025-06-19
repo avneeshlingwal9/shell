@@ -62,7 +62,7 @@ void execute(char* command , char* input ){
   if(pid == 0){  
 
     execvp(command , args);
-    err = errno;
+    printf("%s: command not found\n", command);
               
   } 
 
@@ -71,10 +71,7 @@ void execute(char* command , char* input ){
   wait(0);
   
   }
-  if(err != 0){
 
-    printf("%s: command not found\n", command);
-  }
 
 
 
