@@ -11,7 +11,20 @@
 #define MAX_COMMAND_SIZE 512
 #define MIN_PATH_SIZE 1024
 
-int errno ; 
+
+
+void executecd(char* path){
+
+  int check = chdir(path);
+
+  if(check == -1){
+
+    printf("cd: %s: No such file or directory\n", path);
+  }
+
+
+
+}
 
 void executepwd(void){
 
@@ -38,7 +51,9 @@ bool checkValid(char *command){
 
     strcmp(command, "echo") == 0 || 
 
-    strcmp(command, "pwd") == 0 )
+    strcmp(command, "pwd") == 0  || 
+
+    strcmp(command , "cd") == 0)
   {
       return true;
   }
@@ -158,7 +173,7 @@ void executeType(char* command ){
 
 
   if(strcmp(command,"type") == 0 || strcmp(command , "exit") == 0 || strcmp(command,"echo") == 0
-    || strcmp(command,"pwd") == 0 ){
+    || strcmp(command,"pwd") == 0 || strcmp(command, "cd") == 0){
 
       printf("%s is a shell builtin\n", command);
       return;
@@ -230,10 +245,17 @@ void handleCommand(char* command , char* inputProcess ){
 
   else if(strcmp(command,"pwd") == 0){
 
+
       executepwd();
 
   }
+  else if(strcmp(command , "cd") == 0){
 
+    char* path = strtok(NULL, " ");
+
+    executecd(path);
+
+  }
   else {
     
     execute(command, inputProcess );
