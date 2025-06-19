@@ -136,7 +136,7 @@ void execute(char* command , char* input ){
   for(int i = 1 ; i < numArgs ; i++){
 
     char* toinsert ; 
-    if(toinsert = strtok(NULL, " ")){
+    if(toinsert = strtok(NULL, "'")){
 
       args[i] = toinsert; 
 
@@ -174,7 +174,14 @@ void execute(char* command , char* input ){
 void executeEcho(char* input, int len){
 
 
-      printf("%s\n" , input + len + 1);
+    char * token; 
+    while(token = strtok(NULL , "'")){
+
+      printf("%s ", token);
+
+    } 
+    printf("\n");
+
 
 
 }
