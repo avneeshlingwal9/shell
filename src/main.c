@@ -12,6 +12,7 @@
 #define MIN_PATH_SIZE 1024
 #define MAX_ARGS 64 
 
+// Parsing the commands. 
 
 int parseCommand(char* input , char**args ){
 
@@ -40,6 +41,8 @@ int parseCommand(char* input , char**args ){
     int buf_pos = 0 ; 
     
     bool inarg = false; 
+
+    // Parsing the command till a space is found. 
 
     while(i < len && input[i] != ' '){
 
