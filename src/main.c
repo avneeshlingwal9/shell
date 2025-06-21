@@ -10,6 +10,114 @@
 
 #define MAX_COMMAND_SIZE 512
 #define MIN_PATH_SIZE 1024
+#define MAX_ARGS 64 
+
+
+int parseCommand(char* input , char**args ){
+
+  int arg_count = 0 ; 
+
+  int i = 0 ; 
+  int len = strlen(input);
+
+  while(i < len && arg_count < MAX_ARGS - 1){
+
+
+    while(i < len && input[i] == ' '){
+
+        i++;
+
+    }
+
+    if(i >= len){
+
+      break;
+
+    }
+
+    char arg_buf[MAX_COMMAND_SIZE]; 
+
+    int buf_pos = 0 ; 
+    
+    bool inarg = false; 
+
+    while(i < len && input[i] != ' '){
+
+      if(input[i] == '\''){
+        
+        i++; 
+
+      
+        while(i < len && input[i] != '\''){
+
+
+          if(buf_pos < MAX_COMMAND_SIZE){
+
+            arg_buf[buf_pos++] = input[i];
+
+          }
+
+          i++;
+
+
+        }
+
+        if(i >= len){
+
+          return -1;
+
+        }
+
+        i++; 
+
+        inarg = true; 
+
+      }
+
+      else{
+
+        while(i < len && input[i] != ' ' && input[i] != '\''){
+
+            arg_buf[buf_pos++] = input[i];
+
+
+            i++;
+        }
+
+        inarg = true; 
+        
+
+
+
+
+
+      
+        }
+
+
+
+
+    
+
+    }
+
+    
+    if(inarg){
+
+      arg_buf[buf_pos++] = '\0'; 
+      args[arg_count++] = strdup(arg_buf);
+    }
+
+
+
+
+
+  }
+
+  args[arg_count] = NULL; 
+
+  return arg_count;
+}
 
 
 
@@ -102,54 +210,28 @@ bool checkValid(char *command){
 
 
 }
-int countArgs(char* input){
 
-  int count = 1; 
-  char * temp; 
-  while(temp = strtok(NULL , " ")){
-
-    count++;
-
-  }
-  return count; 
-
-}
-
-void execute(char* command , char* input ){
+void execute(char** args , int args_length ){
 
   
 
-  char tempinput[MAX_COMMAND_SIZE];
+
 
   // Copying, so during counting, input is not tampered.  
 
 
-  strcpy(tempinput , input);
 
-  int numArgs = countArgs(tempinput);
 
-  char* args[numArgs + 1]; 
 
-  args[0] = strtok(input, " "); 
+
  
 
-  for(int i = 1 ; i < numArgs ; i++){
 
-    char* toinsert ; 
-    if(toinsert = strtok(NULL, "'")){
-
-      args[i] = toinsert; 
-
-    }
-
-  }
-  int err = 0 ; 
-  args[numArgs] = NULL; 
   int pid = fork();
 
   if(pid == 0){  
 
-    execvp(command , args);
+    execvp(args[0] , args);
 
               
   } 
@@ -172,52 +254,21 @@ void execute(char* command , char* input ){
 
 }
 
-int modifyChar(char* dest , char* src , int len){
-
-  int j = 0; 
-  for(int i = len + 1 ; i < strlen(src); i++){
 
 
-      if(src[i] != '\''){
 
-        dest[j++] = src[i]; 
-        
-      }
 
+void executeEcho(char** input , int args_length){
+
+
+  for(int i = 1 ; i < args_length; i++){
+
+    printf("%s\n", input[i]);
   }
 
 
- 
-
-  return j; 
-
-}
-void executeEcho(char* input, int len){
 
 
-  char* token = strchr(input , '\'');
-  if(token == NULL){
-
-    while(token = strtok(NULL , " ")){
-
-      printf("%s ", token);
-    
-    }
-
-  }
-  else{
-  
-    int n = strlen(input); 
-
-    char literal[n];  
-    int newlen = modifyChar(literal , input , len);
-
-    literal[newlen] = '\0'; 
-
-    printf("%s" , literal);
-
-  }
-  printf("\n");
 
 
 
@@ -271,7 +322,9 @@ void executeType(char* command ){
 
 
 
-void handleCommand(char* command , char* inputProcess ){
+void handleCommand(char **args , int args_length){
+
+  char* command = args[0]; 
 
   if(!checkValid(command)){
   
@@ -286,13 +339,13 @@ void handleCommand(char* command , char* inputProcess ){
   }
 
   else if(strcmp(command , "echo") == 0){
-    executeEcho(inputProcess , strlen(command));
+    executeEcho(args , args_length);
   }
   else if(strcmp(command, "type") == 0){
 
     // Because strtok, was called on input, it still have that string tokenize. 
 
-    char* toFindType = strtok(NULL , " ");
+    char* toFindType = args[1]; 
 
     executeType(toFindType );
 
@@ -306,14 +359,14 @@ void handleCommand(char* command , char* inputProcess ){
   }
   else if(strcmp(command , "cd") == 0){
 
-    char* path = strtok(NULL, " ");
+    char* path = args[1]; 
 
     executecd(path);
 
   }
   else {
     
-    execute(command, inputProcess );
+    execute(args , args_length);
   
 
 
@@ -339,12 +392,11 @@ void shellStart(void){
 
 
 
-    char inputProcess[MAX_COMMAND_SIZE] ; // Copy made, as strtok, can affect the original string. 
+      char *args[MAX_ARGS] ; 
+      int args_length = parseCommand(input , args); 
 
-    strcpy(inputProcess , input);
-    char * command = strtok(input , " ");
+      handleCommand(args , args_length); 
 
-    handleCommand(command , inputProcess);
 
   }
 }
