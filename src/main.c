@@ -46,63 +46,26 @@ int parseCommand(char* input , char**args ){
 
     while(i < len && input[i] != ' '){
 
-      if(input[i] == '\''){
+      if(input[i] == '\'' || input[i] == '"'){
         
         i++; 
+  
+      }
 
-      
-        while(i < len && input[i] != '\''){
+      else{
 
+        if(buf_pos < MAX_COMMAND_SIZE - 1){
 
-          if(buf_pos < MAX_COMMAND_SIZE){
-
-            arg_buf[buf_pos++] = input[i];
-
-          }
-
-          i++;
-
+          arg_buf[buf_pos++] = input[i++];
 
         }
 
-        if(i >= len){
-
-          return -1;
-
-        }
-
-        i++; 
+      }
 
         inarg = true; 
 
       }
 
-      else{
-
-        while(i < len && input[i] != ' ' && input[i] != '\''){
-
-            arg_buf[buf_pos++] = input[i];
-
-
-            i++;
-        }
-
-        inarg = true; 
-        
-
-
-
-
-
-      
-        }
-
-
-
-
-    
-
-    }
 
     
     if(inarg){
