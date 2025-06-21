@@ -171,6 +171,27 @@ void execute(char* command , char* input ){
 
 
 }
+
+int modifyChar(char* dest , char* src , int len){
+
+  int j = 0; 
+  for(int i = len + 1 ; i < strlen(src); i++){
+
+
+      if(src[i] != '\''){
+
+        dest[j++] = src[i]; 
+        
+      }
+
+  }
+
+
+ 
+
+  return j; 
+
+}
 void executeEcho(char* input, int len){
 
 
@@ -185,12 +206,15 @@ void executeEcho(char* input, int len){
 
   }
   else{
+  
+    int n = strlen(input); 
 
-    while(token = strtok(NULL , "'")){
+    char literal[n];  
+    int newlen = modifyChar(literal , input , len);
 
-      printf("%s ", token); 
+    literal[newlen] = '\0'; 
 
-    }
+    printf("%s" , literal);
 
   }
   printf("\n");
