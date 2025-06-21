@@ -76,6 +76,7 @@ int parseCommand(char* input , char**args ){
       i++;
 
       while(i < len && input[i] != '"'){
+
         if(buf_pos < MAX_COMMAND_SIZE - 1){
 
           arg_buf[buf_pos++] = input[i++];
@@ -96,7 +97,7 @@ int parseCommand(char* input , char**args ){
 
       else{
 
-        while(i < len && input[i] != ' '){
+        while(i < len && input[i] != ' ' && input[i] != '\'' && input[i] != '"'){
 
           arg_buf[buf_pos++] = input[i++];
         }
