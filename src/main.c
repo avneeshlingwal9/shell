@@ -99,7 +99,12 @@ int parseCommand(char* input , char**args ){
 
         while(i < len && input[i] != ' ' && input[i] != '\'' && input[i] != '"'){
 
-          arg_buf[buf_pos++] = input[i++];
+          if(input[i] != '\\'){
+
+          
+
+          arg_buf[buf_pos++] = input[i];}
+          i++;
         }
 
       }
