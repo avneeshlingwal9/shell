@@ -174,13 +174,26 @@ void execute(char* command , char* input ){
 void executeEcho(char* input, int len){
 
 
-    char * token; 
-    while(token = strtok(NULL , "'")){
+  char* token = strchr(input , '\'');
+  if(token == NULL){
+
+    while(token = strtok(NULL , " ")){
 
       printf("%s ", token);
+    
+    }
 
-    } 
-    printf("\n");
+  }
+  else{
+
+    while(token = strtok(NULL , "'")){
+
+      printf("%s ", token); 
+
+    }
+
+  }
+  printf("\n");
 
 
 
