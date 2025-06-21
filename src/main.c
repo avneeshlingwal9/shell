@@ -263,12 +263,12 @@ void executeEcho(char** input , int args_length){
 
   for(int i = 1 ; i < args_length; i++){
 
-    printf("%s\n", input[i]);
+    printf("%s ", input[i]);
   }
 
 
 
-
+printf("\n");
 
 
 
