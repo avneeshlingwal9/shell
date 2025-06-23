@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include <sys/wait.h>
 #include <errno.h>
+#include <fcntl.h>
 
 // Starts the shell.
 
@@ -187,7 +188,7 @@ void executepwd(void){
     printf("%s\n",dir);
   }
 
-  free(dir);
+  free(dir); 
 
 }
 
@@ -292,6 +293,10 @@ void executeEcho(char** input , int args_length){
 
   for(int i = 1 ; i < args_length; i++){
 
+    if(strcmp(input[i] , ">") == 0 || strcmp(input[i], "1>") == 0){
+      break;
+    }
+
     printf("%s ", input[i]);
   }
 
@@ -354,6 +359,32 @@ void executeType(char* command ){
 void handleCommand(char **args , int args_length){
 
   char* command = args[0]; 
+  int redirection_index = -1 ; 
+  int new_fd = -1; 
+  int copy_stdout = dup(STDOUT_FILENO);
+  for(int i = 0 ; i < args_length ; i++){
+
+    if(strcmp(args[i] , ">") == 0 || strcmp(args[i],"1>") == 0){
+
+      redirection_index = i ; 
+      break; 
+
+    }
+
+  }
+
+  if(redirection_index != -1){
+
+    int file = open(args[redirection_index + 1] , O_CREAT | O_WRONLY  , 0777);
+
+
+    new_fd = dup2(file, STDOUT_FILENO);
+    close(file);
+
+
+
+
+  }
 
   if(!checkValid(command)){
   
@@ -398,6 +429,14 @@ void handleCommand(char **args , int args_length){
     execute(args , args_length);
   
 
+
+  }
+
+  if(new_fd != -1){
+
+    dup2(copy_stdout, new_fd);
+
+    close(copy_stdout);
 
   }
 
