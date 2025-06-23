@@ -360,9 +360,15 @@ void handleCommand(char **args , int args_length){
   int copy_stdout = dup(STDOUT_FILENO);
   int copy_stderr = dup(STDERR_FILENO);
   bool isErr = false; 
+  bool isAppend = false; 
+
   for(int i = 0 ; i < args_length ; i++){
 
-    if(strcmp(args[i] , ">") == 0 || strcmp(args[i],"1>") == 0 || strcmp(args[i] , "2>") == 0){
+    if(strcmp(args[i] , ">") == 0 || strcmp(args[i],"1>") == 0 || strcmp(args[i] , "2>") == 0 
+
+    || strcmp(args[i] , ">>") == 0 || strcmp(args[i], "1>>") == 0  
+    
+    || strcmp(args[i] , "2>>") == 0){
 
       redirection_index = i ; 
       if(strcmp(args[i] , "2>") == 0){
@@ -371,15 +377,30 @@ void handleCommand(char **args , int args_length){
 
       }
 
-      break; 
+      if(strcmp(args[i], "1>>") == 0 || strcmp(args[i], ">>") == 0 
+      
+        || strcmp(args[i], "2>>") == 0){
+
+        isAppend = true; 
+
+      }
+
+       break; 
 
     }
 
   }
 
   if(redirection_index != -1){
+    int flags = O_WRONLY | O_CREAT;
+    if(isAppend){
 
-    int file = open(args[redirection_index + 1] , O_CREAT | O_WRONLY  , 0777);
+      flags = flags | O_APPEND;
+
+
+    }
+
+    int file = open(args[redirection_index + 1] , flags, 0777);
 
     if(isErr){
 

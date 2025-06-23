@@ -3,3 +3,4 @@ main
 main2
 main.c
 man
+hello 
