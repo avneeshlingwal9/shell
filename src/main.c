@@ -371,7 +371,7 @@ void handleCommand(char **args , int args_length){
     || strcmp(args[i] , "2>>") == 0){
 
       redirection_index = i ; 
-      if(strcmp(args[i] , "2>") == 0){
+      if(strcmp(args[i] , "2>") == 0 || strcmp(args[i], "2>>") == 0) {
 
         isErr = true; 
 
