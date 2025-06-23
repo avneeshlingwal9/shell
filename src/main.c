@@ -380,6 +380,8 @@ void handleCommand(char **args , int args_length){
 
     new_fd = dup2(file, STDOUT_FILENO);
     close(file);
+    args[redirection_index] = NULL; 
+    args_length = redirection_index; 
 
 
 
