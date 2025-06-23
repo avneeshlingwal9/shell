@@ -293,10 +293,6 @@ void executeEcho(char** input , int args_length){
 
   for(int i = 1 ; i < args_length; i++){
 
-    if(strcmp(input[i] , ">") == 0 || strcmp(input[i], "1>") == 0){
-      break;
-    }
-
     printf("%s ", input[i]);
   }
 
@@ -362,11 +358,19 @@ void handleCommand(char **args , int args_length){
   int redirection_index = -1 ; 
   int new_fd = -1; 
   int copy_stdout = dup(STDOUT_FILENO);
+  int copy_stderr = dup(STDERR_FILENO);
+  bool isErr = false; 
   for(int i = 0 ; i < args_length ; i++){
 
-    if(strcmp(args[i] , ">") == 0 || strcmp(args[i],"1>") == 0){
+    if(strcmp(args[i] , ">") == 0 || strcmp(args[i],"1>") == 0 || strcmp(args[i] , "2>") == 0){
 
       redirection_index = i ; 
+      if(strcmp(args[i] , "2>") == 0){
+
+        isErr = true; 
+
+      }
+
       break; 
 
     }
@@ -377,8 +381,17 @@ void handleCommand(char **args , int args_length){
 
     int file = open(args[redirection_index + 1] , O_CREAT | O_WRONLY  , 0777);
 
+    if(isErr){
 
-    new_fd = dup2(file, STDOUT_FILENO);
+      new_fd = dup2(file, STDERR_FILENO);
+
+
+    }
+    else{
+
+      new_fd = dup2(file , STDOUT_FILENO);
+
+    }
     close(file);
     args[redirection_index] = NULL; 
     args_length = redirection_index; 
@@ -436,11 +449,24 @@ void handleCommand(char **args , int args_length){
 
   if(new_fd != -1){
 
-    dup2(copy_stdout, new_fd);
+    if(isErr){
 
-    close(copy_stdout);
+      dup2(copy_stderr , new_fd); 
+
+
+    }
+    else{
+
+      dup2(copy_stdout , new_fd); 
+    }
+
+    
+
 
   }
+
+  close(copy_stderr);
+  close(copy_stdout);
 
 
 
