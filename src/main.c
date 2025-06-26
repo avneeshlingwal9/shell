@@ -6,12 +6,28 @@
 #include <sys/wait.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <readline/readline.h>
+
 
 // Starts the shell.
 
 #define MAX_COMMAND_SIZE 512
 #define MIN_PATH_SIZE 1024
 #define MAX_ARGS 64 
+
+char** commandCompletion(const char* , int , int); 
+
+char *commandMatch(const char* , int); 
+
+const char* builitInCommands[] = {
+  "echo", 
+  "exit", 
+  "type",
+  "pwd",
+  "cd",
+  NULL,
+
+};
 
 // Parsing the commands. 
 
@@ -494,25 +510,16 @@ void handleCommand(char **args , int args_length){
 }
 void shellStart(void){
 
-    while(true){
-      printf("$ ");
-      char input[MAX_COMMAND_SIZE];
-      if(fgets(input, MAX_COMMAND_SIZE, stdin) == NULL){
-        return;
-      }
+  rl_attempted_completion_function = commandCompletion;
 
-      char* p = strchr(input, '\n');
-      if(p != NULL){
-        *p = '\0';
-      }
-
-
-
-
+    while(true){      
+      char* input = readline("$ ");
       char *args[MAX_ARGS] ; 
       int args_length = parseCommand(input , args); 
 
       handleCommand(args , args_length); 
+
+      free(input);
 
 
   }
@@ -532,4 +539,39 @@ int main(int argc, char *argv[]) {
 
 
   return 0;
+}
+
+char **commandCompletion(const char* text , int start , int end){
+
+  rl_attempted_completion_over = 1; 
+
+  return rl_completion_matches(text , commandMatch);
+
+}
+
+char *commandMatch(const char* text , int state){
+
+  const char* name; 
+  static int commandLength , commandIndex; 
+
+  if(state == 0){
+
+    commandLength = strlen(text);
+
+    commandIndex = 0;  
+
+  }
+
+  while((name = builitInCommands[commandIndex++]) != NULL){
+
+    if(strncmp(name , text, commandLength) == 0){
+
+      return strdup(name);
+
+    }
+
+  }
+
+  return NULL; 
+
 }
