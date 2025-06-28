@@ -72,7 +72,7 @@ struct DynamicArrays fillExecutable(const char *var){
 
      struct DynamicArrays dArray = createArray(10);
 
-    char *path = getenv(var);
+    char *path = strdup(getenv(var));
 
     char * curr = strtok(path , ":");
 
@@ -107,6 +107,8 @@ struct DynamicArrays fillExecutable(const char *var){
 
 
     }
+
+    free(path);
 
     return dArray;
 }
