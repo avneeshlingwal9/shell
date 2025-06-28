@@ -7,6 +7,8 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <readline/readline.h>
+#include <dirent.h>
+#include "dynamicArray.h"
 
 
 // Starts the shell.
@@ -17,7 +19,7 @@
 
 char** commandCompletion(const char* , int , int); 
 
-char *commandMatch(const char* , int); 
+char *commandMatch(const char* , int ); 
 
 const char* builitInCommands[] = {
   "echo", 
@@ -28,6 +30,11 @@ const char* builitInCommands[] = {
   NULL,
 
 };
+
+  struct DynamicArrays darr ;
+
+
+
 
 // Parsing the commands. 
 
@@ -517,6 +524,8 @@ void shellStart(void){
       char *args[MAX_ARGS] ; 
       int args_length = parseCommand(input , args); 
 
+
+
       handleCommand(args , args_length); 
 
       free(input);
@@ -528,8 +537,13 @@ void shellStart(void){
 int main(int argc, char *argv[]) {
   // Flush after every printf
   setbuf(stdout, NULL);
-
+  darr = fillExecutable("PATH");
   shellStart();
+
+  freeStorage(darr);
+
+
+
 
 
 
@@ -541,15 +555,53 @@ int main(int argc, char *argv[]) {
   return 0;
 }
 
+char *executableMatch(const char* text , int state){
+
+  static int commandLength , startIndex;
+
+
+  const char* name; 
+  if(state == 0){
+
+    commandLength = strlen(text); 
+    startIndex = 0; 
+
+  }
+
+  while(startIndex < darr.currentIndex){
+
+    name = darr.array[startIndex++];
+    if(strncmp(name , text , commandLength) == 0){
+
+ 
+        return strdup(name); 
+    }
+  }
+
+  return NULL; 
+
+  
+
+  
+
+}
 char **commandCompletion(const char* text , int start , int end){
 
   rl_attempted_completion_over = 1; 
 
-  return rl_completion_matches(text , commandMatch);
 
+
+
+
+  char** matches = rl_completion_matches(text , commandMatch);
+
+  if(matches != NULL && matches[0] != NULL){
+    return matches;
+  }
+  return rl_completion_matches(text , executableMatch);
 }
 
-char *commandMatch(const char* text , int state){
+char *commandMatch(const char* text , int state ){
 
   const char* name; 
   static int commandLength , commandIndex; 
