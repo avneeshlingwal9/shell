@@ -291,9 +291,9 @@ bool checkValid(char *command){
 void executeEcho(char** input , int args_length){
 
 
-  for(int i = 1 ; i < args_length; i++){
+  for(int i = 1 ; i < args_length && input[i] != NULL; i++){
 
-    printf("%s ", input[i]);
+    printf("%s", input[i]);
   }
 
 
