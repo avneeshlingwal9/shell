@@ -347,6 +347,60 @@ void executeType(char* command ){
   printf("%s: not found\n", command);
 
 }
+
+void executeBuiltIn( char** args , int args_length){
+
+
+
+
+    if(strcmp(args[0] , "exit") == 0){
+
+      exit(0);
+
+  }
+
+  else if(strcmp(args[0] , "echo") == 0){
+    
+    executeEcho(args , args_length);
+    
+  }
+  else if(strcmp(args[0], "type") == 0){
+
+    // Because strtok, was called on input, it still have that string tokenize. 
+
+    char* toFindType = args[1]; 
+
+    executeType(toFindType );
+
+    
+
+  }
+
+  else if(strcmp(args[0],"pwd") == 0){
+
+
+      executepwd();
+
+  }
+  else if(strcmp(args[0] , "cd") == 0){
+
+    char* path = args[1]; 
+
+    executecd(path);
+
+  }
+  
+
+
+}
+
+
+
+
+
+
+
+
 int execute(char** args , int args_length ){
 
  
@@ -366,31 +420,40 @@ char **leftCmd = args;
 
 
 char **rightCmd = NULL; 
-
-if(containsPipe){
-  rightCmd = &args[pipeIndex] + 1; 
-}
-
 int fd[2]; 
 
 if(pipe(fd) == -1){
+  return 3; 
+}
 
-  return 3;
+if(containsPipe){
+  args[pipeIndex] = NULL;
+  rightCmd = &args[pipeIndex + 1] ;
+
+}
+
+if(containsPipe == false && isBuiltin(leftCmd[0])){
+
+  executeBuiltIn(leftCmd , args_length);
+  return 0; 
 
 }
 
 
 
-int pid1 = fork() , pid2 = 0 ; 
+int pid1 = -1 , pid2 = -1 ; 
 
-if(pid1 < 0){
+if(!isBuiltin(leftCmd[0])){
 
-  return 2; 
+  pid1 = fork();
+  if(pid1 == -1)
+  {
 
-}
+    return 2; 
+
+  }
 
 if(pid1 == 0){
-
   if (containsPipe){
 
     dup2(fd[1] , STDOUT_FILENO);
@@ -401,42 +464,31 @@ if(pid1 == 0){
   close(fd[0]);
   close(fd[1]); 
 
-  if(isBuiltin(leftCmd[0])){
-
-    if(strcmp(leftCmd[0] , "exit") == 0){
-    exit(0);  
-  }
-
-  else if(strcmp(leftCmd[0] , "echo") == 0){
-    executeEcho(args , args_length);
-  }
-  else if(strcmp(leftCmd[0], "type") == 0){
-
-    // Because strtok, was called on input, it still have that string tokenize. 
-
-    char* toFindType = args[1]; 
-
-    executeType(toFindType );
-
-  }
-
-  else if(strcmp(leftCmd[0],"pwd") == 0){
 
 
-      executepwd();
-
-  }
-  else if(strcmp(leftCmd[0] , "cd") == 0){
-
-    char* path = args[1]; 
-
-    executecd(path);
-
-  }
-
-  }
 
   execvp(leftCmd[0], leftCmd); 
+
+
+
+
+  }
+}
+
+
+if(isBuiltin(leftCmd[0]) && containsPipe ){
+
+  int stdCopy = dup(STDOUT_FILENO); 
+
+  int copyFd = dup2(fd[1] , STDOUT_FILENO);
+
+  executeBuiltIn(leftCmd, pipeIndex); 
+
+  dup2(stdCopy , copyFd); 
+
+
+  close(stdCopy);
+
 
 
 
@@ -446,7 +498,21 @@ if(pid1 == 0){
 if(containsPipe){
 
 
+  if(isBuiltin(rightCmd[0])){
 
+    int stdIn = dup(STDIN_FILENO); 
+    int copySt = dup2(fd[0] , STDIN_FILENO); 
+
+    executeBuiltIn(rightCmd , args_length - pipeIndex); 
+
+    dup2(stdIn , copySt);
+
+    close(stdIn);
+
+  }
+
+
+else{
 
   pid2 = fork(); 
 
@@ -470,14 +536,14 @@ if(containsPipe){
   }
 
 
-}
+}}
 
 close(fd[0]);
 close(fd[1]); 
+if(pid1 != -1){
+waitpid(pid1 , NULL , 0); }
 
-waitpid(pid1 , NULL , 0); 
-
-if(containsPipe){
+if(pid2 != -1){
   waitpid(pid2 , NULL , 0);
 }
   
@@ -574,9 +640,12 @@ void handleCommand(char **args , int args_length){
       return;
 
   }
+    
+  
 
     
   execute(args , args_length);
+  
 
   if(new_fd != -1){
 
