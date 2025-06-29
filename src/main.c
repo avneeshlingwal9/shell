@@ -198,6 +198,26 @@ void executecd(char* path){
 
 }
 
+bool isBuiltin(const char* command){
+
+  if(strcmp(command , "type") == 0 || 
+
+    strcmp(command, "exit") == 0 || 
+
+    strcmp(command , "cd") == 0 ||
+    
+    strcmp(command , "echo") == 0 ||
+    
+    strcmp(command , "pwd") == 0 
+ ){
+
+  return true; 
+
+ }
+
+ return false; 
+
+}
 void executepwd(void){
 
   char* dir = getcwd(NULL , 1024);
@@ -264,121 +284,7 @@ bool checkValid(char *command){
 
 }
 
-int execute(char** args , int args_length ){
 
- 
-int pipeIndex = 0 ; 
-
-while(pipeIndex < args_length && strcmp(args[pipeIndex] , "|") != 0){
-  
-  pipeIndex++;
-
-}
-
-
-bool containsPipe = pipeIndex != args_length; 
-
-
-char **leftCmd = args; 
-
-
-char **rightCmd = NULL; 
-
-if(containsPipe){
-  rightCmd = &args[pipeIndex] + 1; 
-}
-
-int fd[2]; 
-
-if(pipe(fd) == -1){
-
-  return 3;
-
-}
-
-
-
-int pid1 = fork() , pid2 = 0 ; 
-
-if(pid1 < 0){
-
-  return 2; 
-
-}
-
-if(pid1 == 0){
-
-  if (containsPipe){
-
-    dup2(fd[1] , STDOUT_FILENO);
-    leftCmd[pipeIndex] = NULL;
-
-  }
-
-  close(fd[0]);
-  close(fd[1]); 
-
-  execvp(leftCmd[0], leftCmd); 
-
-
-
-
-}
-
-if(containsPipe){
-
-
-
-
-  pid2 = fork(); 
-
-  if(pid2 < 0){
-
-    return 2; 
-
-  }
-
-
-  if(pid2 == 0){
-
-    dup2(fd[0] , STDIN_FILENO); 
-
-    close(fd[0]);
-    close(fd[1]);
-
-    execvp(rightCmd[0], rightCmd); 
-  
-
-  }
-
-
-}
-
-close(fd[0]);
-close(fd[1]); 
-
-waitpid(pid1 , NULL , 0); 
-
-if(containsPipe){
-  waitpid(pid2 , NULL , 0);
-}
-  
-  
-
-
-
-
-
-  
-
-  
-
-
-  return 0;
-  
-  
-
-}
 
 
 
@@ -441,7 +347,156 @@ void executeType(char* command ){
   printf("%s: not found\n", command);
 
 }
+int execute(char** args , int args_length ){
 
+ 
+int pipeIndex = 0 ; 
+
+while(pipeIndex < args_length && strcmp(args[pipeIndex] , "|") != 0){
+  
+  pipeIndex++;
+
+}
+
+
+bool containsPipe = pipeIndex != args_length; 
+
+
+char **leftCmd = args; 
+
+
+char **rightCmd = NULL; 
+
+if(containsPipe){
+  rightCmd = &args[pipeIndex] + 1; 
+}
+
+int fd[2]; 
+
+if(pipe(fd) == -1){
+
+  return 3;
+
+}
+
+
+
+int pid1 = fork() , pid2 = 0 ; 
+
+if(pid1 < 0){
+
+  return 2; 
+
+}
+
+if(pid1 == 0){
+
+  if (containsPipe){
+
+    dup2(fd[1] , STDOUT_FILENO);
+    leftCmd[pipeIndex] = NULL;
+
+  }
+
+  close(fd[0]);
+  close(fd[1]); 
+
+  if(isBuiltin(leftCmd[0])){
+
+    if(strcmp(leftCmd[0] , "exit") == 0){
+    exit(0);  
+  }
+
+  else if(strcmp(leftCmd[0] , "echo") == 0){
+    executeEcho(args , args_length);
+  }
+  else if(strcmp(leftCmd[0], "type") == 0){
+
+    // Because strtok, was called on input, it still have that string tokenize. 
+
+    char* toFindType = args[1]; 
+
+    executeType(toFindType );
+
+  }
+
+  else if(strcmp(leftCmd[0],"pwd") == 0){
+
+
+      executepwd();
+
+  }
+  else if(strcmp(leftCmd[0] , "cd") == 0){
+
+    char* path = args[1]; 
+
+    executecd(path);
+
+  }
+
+  }
+
+  execvp(leftCmd[0], leftCmd); 
+
+
+
+
+}
+
+if(containsPipe){
+
+
+
+
+  pid2 = fork(); 
+
+  if(pid2 < 0){
+
+    return 2; 
+
+  }
+
+
+  if(pid2 == 0){
+
+    dup2(fd[0] , STDIN_FILENO); 
+
+    close(fd[0]);
+    close(fd[1]);
+
+    execvp(rightCmd[0], rightCmd); 
+  
+
+  }
+
+
+}
+
+close(fd[0]);
+close(fd[1]); 
+
+waitpid(pid1 , NULL , 0); 
+
+if(containsPipe){
+  waitpid(pid2 , NULL , 0);
+}
+  
+  
+
+
+
+
+
+  
+
+  
+
+
+  return 0;
+  
+  
+
+}
 void handleCommand(char **args , int args_length){
 
   char* command = args[0]; 
@@ -520,43 +575,8 @@ void handleCommand(char **args , int args_length){
 
   }
 
-  if(strcmp(command , "exit") == 0){
-    exit(0);  
-  }
-
-  else if(strcmp(command , "echo") == 0){
-    executeEcho(args , args_length);
-  }
-  else if(strcmp(command, "type") == 0){
-
-    // Because strtok, was called on input, it still have that string tokenize. 
-
-    char* toFindType = args[1]; 
-
-    executeType(toFindType );
-
-  }
-
-  else if(strcmp(command,"pwd") == 0){
-
-
-      executepwd();
-
-  }
-  else if(strcmp(command , "cd") == 0){
-
-    char* path = args[1]; 
-
-    executecd(path);
-
-  }
-  else {
     
-    execute(args , args_length);
-  
-
-
-  }
+  execute(args , args_length);
 
   if(new_fd != -1){
 
