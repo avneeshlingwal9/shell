@@ -31,7 +31,7 @@ const char* builitInCommands[] = {
 
 };
 
-  struct DynamicArrays darr ;
+struct DynamicArrays darr ;
 
 
 
@@ -264,50 +264,121 @@ bool checkValid(char *command){
 
 }
 
-void execute(char** args , int args_length ){
-
-  
-
-
-
-  // Copying, so during counting, input is not tampered.  
-
-
-
-
-
+int execute(char** args , int args_length ){
 
  
+int pipeIndex = 0 ; 
 
-
-  int pid = fork();
-
-  if(pid == 0){  
-
-    execvp(args[0] , args);
-
-              
-  } 
-
-  else{
-
-  wait(0);
+while(pipeIndex < args_length && strcmp(args[pipeIndex] , "|") != 0){
   
+  pipeIndex++;
+
+}
+
+
+bool containsPipe = pipeIndex != args_length; 
+
+
+char **leftCmd = args; 
+
+
+char **rightCmd = NULL; 
+
+if(containsPipe){
+  rightCmd = &args[pipeIndex] + 1; 
+}
+
+int fd[2]; 
+
+if(pipe(fd) == -1){
+
+  return 3;
+
+}
+
+
+
+int pid1 = fork() , pid2 = 0 ; 
+
+if(pid1 < 0){
+
+  return 2; 
+
+}
+
+if(pid1 == 0){
+
+  if (containsPipe){
+
+    dup2(fd[1] , STDOUT_FILENO);
+    leftCmd[pipeIndex] = NULL;
+
   }
 
+  close(fd[0]);
+  close(fd[1]); 
 
+  execvp(leftCmd[0], leftCmd); 
 
-
-
-
-
-  
 
 
 
 }
 
+if(containsPipe){
 
+
+
+
+  pid2 = fork(); 
+
+  if(pid2 < 0){
+
+    return 2; 
+
+  }
+
+
+  if(pid2 == 0){
+
+    dup2(fd[0] , STDIN_FILENO); 
+
+    close(fd[0]);
+    close(fd[1]);
+
+    execvp(rightCmd[0], rightCmd); 
+  
+
+  }
+
+
+}
+
+close(fd[0]);
+close(fd[1]); 
+
+waitpid(pid1 , NULL , 0); 
+
+if(containsPipe){
+  waitpid(pid2 , NULL , 0);
+}
+  
+  
+
+
+
+
+
+  
+
+  
+
+
+  return 0;
+  
+  
+
+}
 
 
 
@@ -370,10 +441,6 @@ void executeType(char* command ){
   printf("%s: not found\n", command);
 
 }
-
-
-
-
 
 void handleCommand(char **args , int args_length){
 
@@ -541,17 +608,6 @@ int main(int argc, char *argv[]) {
   shellStart();
 
   freeStorage(darr);
-
-
-
-
-
-
-  
-
-
-
-
   return 0;
 }
 
